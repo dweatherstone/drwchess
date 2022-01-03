@@ -42,6 +42,13 @@ impl Board<'_> {
         self.board[y * self.size + x]
     }
 
+    pub fn get_square(&self, square: usize) -> Option<Piece> {
+        if square >= self.size * self.size {
+            return None;
+        }
+        self.board[square]
+    }
+
     pub fn set(&mut self, y: usize, x: usize, value: Option<Piece>) {
         if y >= self.size || x >= self.size {
             return;
@@ -55,18 +62,15 @@ impl Board<'_> {
     }
 
     pub fn init(&mut self) {
-        self.fen_init(String::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"));
+        let fen = String::from("r1b1qb1r/8/8/8/8/8/8/R1B1QB1R");
+        self.fen_init(fen);   //String::from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"));
     }
 
-    // -------------------------------------------
-    // ------------ PRIVATE FUNCTIONS ------------
-    // -------------------------------------------
-
-    fn draw_board(&self, canvas: &mut WindowCanvas, width: i32, height: i32) {
+    pub fn draw_board(&self, canvas: &mut WindowCanvas, width: i32, height: i32) {
         let mut alternate: u8 = 0;
 
         let case_height: i32 = height / self.size as i32;
-        let case_width:i32 = width / self.size as i32;
+        let case_width: i32 = width / self.size as i32;
 
         for y in 0..self.size {
             for x in 0..self.size {
@@ -85,7 +89,7 @@ impl Board<'_> {
         }
     }
 
-    fn draw_pieces(&self, canvas: &mut WindowCanvas, width: i32, height: i32) {
+    pub fn draw_pieces(&self, canvas: &mut WindowCanvas, width: i32, height: i32) {
         let case_height: i32 = height / self.size as i32;
         let case_width:i32 = width / self.size as i32;
 
@@ -112,6 +116,10 @@ impl Board<'_> {
         }
     }
 
+    // -------------------------------------------
+    // ------------ PRIVATE FUNCTIONS ------------
+    // -------------------------------------------
+
     fn fen_init(&mut self, notation: String) {
         let mut index: usize = 0;
         for (i, c) in notation.chars().enumerate() {
@@ -129,7 +137,7 @@ impl Board<'_> {
                     None => {println!("{} is not a valid symbol for a chess piece !", c)},
                     p => {
                         self.board[index] = p;
-                        println!("Genereated new piece with symbol: {}", c);
+                        println!("Generated new piece with symbol: {}", c);
                     }
                 }
                 index += 1;
