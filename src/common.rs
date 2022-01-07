@@ -1,4 +1,3 @@
-
 pub mod Misc {
     pub fn islowercase(car: char) -> bool {
         car.to_lowercase().last().unwrap() == car
@@ -7,7 +6,7 @@ pub mod Misc {
     pub fn to_digit(car: char) -> Option<u8> {
         match car {
             '0'..='9' => Some(car as u8 - '0' as u8),
-            _ => None
+            _ => None,
         }
     }
 
@@ -26,7 +25,17 @@ pub mod Misc {
 pub mod MoveData {
     use crate::common::Misc::min;
 
-    // first 4 digits, move for column and line movements
+    pub const NORTH: usize = 0;
+    pub const SOUTH: usize = 1;
+    pub const EAST: usize = 3;
+    pub const WEST: usize = 2;
+
+    pub const NORTH_EAST: usize = 6;
+    pub const NORTH_WEST: usize = 4;
+    pub const SOUTH_EAST: usize = 5;
+    pub const SOUTH_WEST: usize = 7;
+
+    // first 4 digits, move for column and row movements
     // last 4 digits, move for diagonls movements
     pub const DIRECTION_OFFSET: [i8; 8] = [-8, 8, -1, 1, -9, 9, -7, 7];
 
@@ -50,10 +59,37 @@ pub mod MoveData {
                     min(num_north as isize, num_west as isize) as i8,
                     min(num_south as isize, num_east as isize) as i8,
                     min(num_north as isize, num_east as isize) as i8,
-                    min(num_south as isize, num_west as isize) as i8
+                    min(num_south as isize, num_west as isize) as i8,
                 ];
             }
         }
         data
+    }
+}
+
+pub mod CanvasDisplay {
+    use sdl2::rect::Rect;
+    use sdl2::render::{Texture, WindowCanvas};
+
+    pub fn canvas_fill(canvas: &mut WindowCanvas, rect: Rect) {
+        match canvas.fill_rect(rect) {
+            Ok(_) => {}
+            Err(msg) => {
+                println!("Error: {}", msg)
+            }
+        }
+    }
+    pub fn canvas_copy(
+        canvas: &mut WindowCanvas,
+        texture: &Texture,
+        rect1: Option<Rect>,
+        rect2: Option<Rect>,
+    ) {
+        match canvas.copy(texture, rect1, rect2) {
+            Ok(_) => {}
+            Err(msg) => {
+                println!("Error: {}", msg)
+            }
+        }
     }
 }

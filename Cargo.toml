@@ -1,5 +1,5 @@
 [package]
-name = "DRWChess"
+name = "drwchess"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,3 +9,8 @@ edition = "2021"
     version = "0.35"
     default-features = false
     features = ["ttf", "image", "gfx", "mixer"]
+
+[dependencies]
+mysql = "*"
+dotenv = "0.15.0"
+chrono = "0.4"
