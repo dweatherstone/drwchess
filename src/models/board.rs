@@ -148,9 +148,9 @@ impl Board<'_> {
             }
             let tmp = misc::to_digit(c);
 
-            if let Some(value) = tmp {
-                println!("char {} is number: {}", c, tmp.unwrap());
-                index += value as usize;
+            if let Some(digit) = tmp {
+                println!("char {} is number: {}", c, digit);
+                index += digit as usize;
             } else {
                 match Piece::new(c) {
                     None => {
