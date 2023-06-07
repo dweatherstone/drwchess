@@ -1,11 +1,11 @@
-pub mod Misc {
+pub mod misc {
     pub fn islowercase(car: char) -> bool {
         car.to_lowercase().last().unwrap() == car
     }
 
     pub fn to_digit(car: char) -> Option<u8> {
         match car {
-            '0'..='9' => Some(car as u8 - '0' as u8),
+            '0'..='9' => Some(car as u8 - b'0'),
             _ => None,
         }
     }
@@ -22,18 +22,18 @@ pub mod Misc {
     }
 }
 
-pub mod MoveData {
-    use crate::common::Misc::min;
+pub mod move_data {
+    use crate::common::misc::min;
 
     pub const NORTH: usize = 0;
     pub const SOUTH: usize = 1;
     pub const EAST: usize = 3;
     pub const WEST: usize = 2;
 
-    pub const NORTH_EAST: usize = 6;
-    pub const NORTH_WEST: usize = 4;
-    pub const SOUTH_EAST: usize = 5;
-    pub const SOUTH_WEST: usize = 7;
+    // pub const NORTH_EAST: usize = 6;
+    // pub const NORTH_WEST: usize = 4;
+    // pub const SOUTH_EAST: usize = 5;
+    // pub const SOUTH_WEST: usize = 7;
 
     // first 4 digits, move for column and row movements
     // last 4 digits, move for diagonls movements
@@ -67,7 +67,7 @@ pub mod MoveData {
     }
 }
 
-pub mod CanvasDisplay {
+pub mod canvas_display {
     use sdl2::rect::Rect;
     use sdl2::render::{Texture, WindowCanvas};
 

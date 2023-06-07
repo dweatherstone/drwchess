@@ -2,8 +2,8 @@ use super::piece::PColor;
 use super::piece::Piece;
 use super::piece::PieceTextures;
 
-use crate::common::CanvasDisplay;
-use crate::common::Misc;
+use crate::common::canvas_display;
+use crate::common::misc;
 
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
@@ -19,7 +19,7 @@ pub struct Board<'a> {
 }
 
 impl Board<'_> {
-    pub fn new<'a>(renderer: &'a TextureCreator<WindowContext>) -> Board<'a> {
+    pub fn new(renderer: &TextureCreator<WindowContext>) -> Board<'_> {
         let mut board: Vec<Option<Piece>> = Vec::new();
 
         // initializing board
@@ -29,7 +29,7 @@ impl Board<'_> {
 
         Board {
             size: 8,
-            board: board,
+            board,
             white: Color::RGBA(234, 203, 164, 255),
             black: Color::RGBA(185, 112, 68, 255),
             piece_textures: Piece::create_piece_textures(renderer),
@@ -86,7 +86,7 @@ impl Board<'_> {
                     1 => canvas.set_draw_color(self.black),
                     _ => {}
                 }
-                CanvasDisplay::canvas_fill(
+                canvas_display::canvas_fill(
                     canvas,
                     Rect::new(
                         x as i32 * case_width,
@@ -105,34 +105,31 @@ impl Board<'_> {
 
         for y in 0..self.size {
             for x in 0..self.size {
-                match self.get(y, x) {
-                    Some(p) => {
-                        let rect = Rect::new(
-                            x as i32 * case_width,
-                            y as i32 * case_height,
-                            case_width as u32,
-                            case_height as u32,
-                        );
-                        match p.color {
-                            PColor::WHITE => {
-                                CanvasDisplay::canvas_copy(
-                                    canvas,
-                                    self.piece_textures.white_textures.get(&p.r#type).unwrap(),
-                                    None,
-                                    Some(rect),
-                                );
-                            }
-                            PColor::BLACK => {
-                                CanvasDisplay::canvas_copy(
-                                    canvas,
-                                    self.piece_textures.black_textures.get(&p.r#type).unwrap(),
-                                    None,
-                                    Some(rect),
-                                );
-                            }
+                if let Some(p) = self.get(y, x) {
+                    let rect = Rect::new(
+                        x as i32 * case_width,
+                        y as i32 * case_height,
+                        case_width as u32,
+                        case_height as u32,
+                    );
+                    match p.color {
+                        PColor::White => {
+                            canvas_display::canvas_copy(
+                                canvas,
+                                self.piece_textures.white_textures.get(&p.r#type).unwrap(),
+                                None,
+                                Some(rect),
+                            );
+                        }
+                        PColor::Black => {
+                            canvas_display::canvas_copy(
+                                canvas,
+                                self.piece_textures.black_textures.get(&p.r#type).unwrap(),
+                                None,
+                                Some(rect),
+                            );
                         }
                     }
-                    None => {}
                 }
             }
         }
@@ -149,11 +146,11 @@ impl Board<'_> {
                 println!("Skipped char /");
                 continue;
             }
-            let tmp = Misc::to_digit(c);
+            let tmp = misc::to_digit(c);
 
-            if tmp != None {
+            if let Some(value) = tmp {
                 println!("char {} is number: {}", c, tmp.unwrap());
-                index += tmp.unwrap() as usize;
+                index += value as usize;
             } else {
                 match Piece::new(c) {
                     None => {

@@ -1,4 +1,4 @@
-use crate::common::Misc;
+use crate::common::misc;
 
 use sdl2::image::LoadTexture;
 use sdl2::render::Texture;
@@ -9,18 +9,18 @@ use std::collections::HashMap;
 
 #[derive(Hash, Eq, PartialEq, Debug, Copy, Clone)]
 pub enum PieceType {
-    PAWN,
-    KNIGHT,
-    BISHOP,
-    ROOK,
-    QUEEN,
-    KING,
+    Pawn,
+    Knight,
+    Bishop,
+    Rook,
+    Queen,
+    King,
 }
 
 #[derive(Eq, PartialEq, Copy, Clone)]
 pub enum PColor {
-    WHITE,
-    BLACK,
+    White,
+    Black,
 }
 
 #[derive(Eq, PartialEq, Copy, Clone)]
@@ -39,51 +39,49 @@ pub struct PieceTextures<'a> {
 }
 
 impl Piece {
-    pub fn new<'a>(symbol: char) -> Option<Piece> {
-        let color = if !Misc::islowercase(symbol) {
-            PColor::WHITE
+    pub fn new(symbol: char) -> Option<Piece> {
+        let color = if !misc::islowercase(symbol) {
+            PColor::White
         } else {
-            PColor::BLACK
+            PColor::Black
         };
 
         let t = match symbol.to_lowercase().last().unwrap() {
-            'p' => (PieceType::PAWN, 1),
-            'n' => (PieceType::KNIGHT, 2),
-            'b' => (PieceType::BISHOP, 3),
-            'r' => (PieceType::ROOK, 4),
-            'q' => (PieceType::QUEEN, 6),
-            'k' => (PieceType::KING, 5),
+            'p' => (PieceType::Pawn, 1),
+            'n' => (PieceType::Knight, 2),
+            'b' => (PieceType::Bishop, 3),
+            'r' => (PieceType::Rook, 4),
+            'q' => (PieceType::Queen, 6),
+            'k' => (PieceType::King, 5),
             _ => return None,
         };
-        let id: u8 = if color == PColor::BLACK { 8 } else { 16 } | t.1;
+        let id: u8 = if color == PColor::Black { 8 } else { 16 } | t.1;
         Some(Piece {
             r#type: t.0,
-            color: color,
-            id: id,
-            can_castle: t.0 == PieceType::KING || t.0 == PieceType::ROOK,
+            color,
+            id,
+            can_castle: t.0 == PieceType::King || t.0 == PieceType::Rook,
             can_en_passant: 0,
         })
     }
 
-    pub fn create_piece_textures<'a>(
-        renderer: &'a TextureCreator<WindowContext>,
-    ) -> PieceTextures<'a> {
+    pub fn create_piece_textures(renderer: &TextureCreator<WindowContext>) -> PieceTextures<'_> {
         let tmp_black = HashMap::from([
-            (PieceType::PAWN, "textures/pieces/black_pawn.png"),
-            (PieceType::KNIGHT, "textures/pieces/black_knight.png"),
-            (PieceType::BISHOP, "textures/pieces/black_bishop.png"),
-            (PieceType::ROOK, "textures/pieces/black_rook.png"),
-            (PieceType::QUEEN, "textures/pieces/black_queen.png"),
-            (PieceType::KING, "textures/pieces/black_king.png"),
+            (PieceType::Pawn, "textures/pieces/black_pawn.png"),
+            (PieceType::Knight, "textures/pieces/black_knight.png"),
+            (PieceType::Bishop, "textures/pieces/black_bishop.png"),
+            (PieceType::Rook, "textures/pieces/black_rook.png"),
+            (PieceType::Queen, "textures/pieces/black_queen.png"),
+            (PieceType::King, "textures/pieces/black_king.png"),
         ]);
 
         let tmp_white = HashMap::from([
-            (PieceType::PAWN, "textures/pieces/white_pawn.png"),
-            (PieceType::KNIGHT, "textures/pieces/white_knight.png"),
-            (PieceType::BISHOP, "textures/pieces/white_bishop.png"),
-            (PieceType::ROOK, "textures/pieces/white_rook.png"),
-            (PieceType::QUEEN, "textures/pieces/white_queen.png"),
-            (PieceType::KING, "textures/pieces/white_king.png"),
+            (PieceType::Pawn, "textures/pieces/white_pawn.png"),
+            (PieceType::Knight, "textures/pieces/white_knight.png"),
+            (PieceType::Bishop, "textures/pieces/white_bishop.png"),
+            (PieceType::Rook, "textures/pieces/white_rook.png"),
+            (PieceType::Queen, "textures/pieces/white_queen.png"),
+            (PieceType::King, "textures/pieces/white_king.png"),
         ]);
 
         let mut white: HashMap<PieceType, Texture> = HashMap::new();
@@ -107,9 +105,9 @@ impl Piece {
     }
 
     pub fn is_sliding_piece(&self) -> bool {
-        self.r#type == PieceType::QUEEN
-            || self.r#type == PieceType::BISHOP
-            || self.r#type == PieceType::ROOK
+        self.r#type == PieceType::Queen
+            || self.r#type == PieceType::Bishop
+            || self.r#type == PieceType::Rook
     }
 
     pub fn is_type(&self, r#type: PieceType) -> bool {

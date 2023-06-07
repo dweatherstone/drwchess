@@ -1,6 +1,6 @@
-use crate::common::Misc;
-use crate::common::MoveData::{precomputed_move_data, DIRECTION_OFFSET};
-use crate::common::MoveData::{EAST, NORTH, SOUTH, WEST};
+use crate::common::misc;
+use crate::common::move_data::{precomputed_move_data, DIRECTION_OFFSET};
+use crate::common::move_data::{EAST, NORTH, SOUTH, WEST};
 
 use super::board::Board;
 use super::piece::{PColor, Piece, PieceType};
@@ -15,10 +15,10 @@ pub struct Move {
 
 #[derive(Eq, Hash, PartialEq, Debug, Copy, Clone)]
 pub enum MoveAction {
-    INCORRECT,
-    MOVE,
-    TAKE,
-    CASTLE,
+    Incorrect,
+    Move,
+    Take,
+    Castle,
 }
 
 impl Move {
@@ -34,7 +34,7 @@ impl Move {
         possible_moves: &HashMap<usize, Vec<Move>>,
     ) -> MoveAction {
         if !Move::is_in_list(start, end, &possible_moves[&start]) {
-            return MoveAction::INCORRECT;
+            return MoveAction::Incorrect;
         }
 
         let selected = board.get_square(end);
@@ -43,32 +43,29 @@ impl Move {
 
         let delta_x: i8 = x as i8 - j as i8;
         let delta_y: i8 = y as i8 - i as i8;
-        if piece.can_castle && Misc::abs(delta_x as isize) == 2 {
+        if piece.can_castle && misc::abs(delta_x as isize) == 2 {
             piece.can_castle = false;
-            match piece.r#type {
-                PieceType::KING => {
-                    match delta_x {
-                        2 => {
-                            // we castled left side
-                            board.set(y, j + 1, board.get(y, 0));
-                            board.set(y, 0, None);
-                        }
-                        -2 => {
-                            // we castled right side
-                            board.set(y, j - 1, board.get(y, 7));
-                            board.set(y, 7, None);
-                        }
-                        a => {
-                            println!("Error: I got a delta of {} when castling!", a);
-                        }
+            if let PieceType::King = piece.r#type {
+                match delta_x {
+                    2 => {
+                        // we castled left side
+                        board.set(y, j + 1, board.get(y, 0));
+                        board.set(y, 0, None);
                     }
-                    board.set(i, j, Some(*piece));
-                    return MoveAction::CASTLE;
+                    -2 => {
+                        // we castled right side
+                        board.set(y, j - 1, board.get(y, 7));
+                        board.set(y, 7, None);
+                    }
+                    a => {
+                        println!("Error: I got a delta of {} when castling!", a);
+                    }
                 }
-                _ => {}
+                board.set(i, j, Some(*piece));
+                return MoveAction::Castle;
             }
-        } else if piece.is_type(PieceType::PAWN) {
-            if Misc::abs(delta_y as isize) == 2 {
+        } else if piece.is_type(PieceType::Pawn) {
+            if misc::abs(delta_y as isize) == 2 {
                 let mut tmp: Vec<(Option<Piece>, i8)> = Vec::new();
                 tmp.push((board.get(i, j + 1), 1));
                 if j != 0 {
@@ -79,7 +76,7 @@ impl Move {
                     match adj {
                         None => {}
                         Some(mut p) => {
-                            if p.is_type(PieceType::PAWN) && piece.is_enemy(adj) {
+                            if p.is_type(PieceType::Pawn) && piece.is_enemy(adj) {
                                 p.can_en_passant = match abs {
                                     -1 => EAST,
                                     1 => WEST,
@@ -88,21 +85,21 @@ impl Move {
                                 // we update the pawn states
                                 board.set(i, (j as i8 + abs) as usize, Some(p));
                             }
-                         }
+                        }
                     }
                 }
-            } else if Misc::abs(delta_y as isize) == 1 && Misc::abs(delta_x as isize) == 1 {
+            } else if misc::abs(delta_y as isize) == 1 && misc::abs(delta_x as isize) == 1 {
                 board.set(y, j, None);
                 board.set(i, j, Some(*piece));
-                return MoveAction::TAKE;
+                return MoveAction::Take;
             }
         }
 
         board.set(i, j, Some(*piece));
 
         match selected {
-            None => MoveAction::MOVE,
-            Some(_) => MoveAction::TAKE,
+            None => MoveAction::Move,
+            Some(_) => MoveAction::Take,
         }
     }
 
@@ -128,7 +125,11 @@ impl MoveGenerator {
         MoveGenerator { precomputed }
     }
 
-    pub fn generate_moves(&self, board: &mut Board, player_color: PColor) -> HashMap<usize, Vec<Move>> {
+    pub fn generate_moves(
+        &self,
+        board: &mut Board,
+        player_color: PColor,
+    ) -> HashMap<usize, Vec<Move>> {
         let mut hash = HashMap::new();
         for square in 0..64 {
             let mut moves: Vec<Move> = Vec::new();
@@ -144,15 +145,15 @@ impl MoveGenerator {
                 self.generate_sliding_move(&mut moves, &piece, square, board);
             } else {
                 match piece.r#type {
-                    PieceType::PAWN => {
+                    PieceType::Pawn => {
                         if self.generate_pawn_move(&mut moves, &mut piece, square, board) {
                             board.set_square(square, Some(piece));
                         }
                     }
-                    PieceType::KNIGHT => {
+                    PieceType::Knight => {
                         self.generate_knight_move(&mut moves, &piece, square, board);
                     }
-                    PieceType::KING => {
+                    PieceType::King => {
                         self.generate_king_move(&mut moves, &piece, square, board);
                     }
                     _ => {}
@@ -170,12 +171,12 @@ impl MoveGenerator {
         square: usize,
         board: &Board,
     ) {
-        let start_index: i32 = if piece.r#type == PieceType::BISHOP {
+        let start_index: i32 = if piece.r#type == PieceType::Bishop {
             4
         } else {
             0
         };
-        let end_index: i32 = if piece.r#type == PieceType::ROOK {
+        let end_index: i32 = if piece.r#type == PieceType::Rook {
             4
         } else {
             8
@@ -184,14 +185,14 @@ impl MoveGenerator {
         for index in start_index..end_index {
             for n in 0..self.precomputed[square][index as usize] {
                 let target = (square as i8 + (DIRECTION_OFFSET[index as usize] * (n + 1))) as usize;
-                let s = board.get_square(target as usize);
-                if s != None {
+                let s = board.get_square(target);
+                if s.is_some() {
                     if piece.is_enemy(s) {
-                        moves.push(Move::new(square, target as usize));
+                        moves.push(Move::new(square, target));
                     }
                     break;
                 } else {
-                    moves.push(Move::new(square, target as usize));
+                    moves.push(Move::new(square, target));
                 }
             }
         }
@@ -204,7 +205,7 @@ impl MoveGenerator {
         board: &Board,
     ) -> bool {
         let max_squares_forward = match piece.color {
-            PColor::WHITE => {
+            PColor::White => {
                 if square / 8 == 6 {
                     // it is on the seventh row
                     2
@@ -212,7 +213,7 @@ impl MoveGenerator {
                     1
                 }
             }
-            PColor::BLACK => {
+            PColor::Black => {
                 if square / 8 == 1 {
                     // it is on the second row
                     2
@@ -221,7 +222,7 @@ impl MoveGenerator {
                 }
             }
         };
-        let (direction, range_column, diag_left, diag_right) = if piece.is_color(PColor::WHITE) {
+        let (direction, range_column, diag_left, diag_right) = if piece.is_color(PColor::White) {
             (
                 DIRECTION_OFFSET[NORTH],
                 self.precomputed[square][NORTH],
@@ -243,7 +244,7 @@ impl MoveGenerator {
 
         for n in 0..max_squares_forward {
             let target = square as i8 + direction * (n + 1);
-            if board.get_square(target as usize) != None {
+            if board.get_square(target as usize).is_some() {
                 break;
             }
             moves.push(Move::new(square, target as usize));
@@ -257,7 +258,7 @@ impl MoveGenerator {
                 }
             }
         }
-        return self.__generate_en_passant_move(moves, piece, direction, square, board);
+        self.__generate_en_passant_move(moves, piece, direction, square, board)
     }
 
     fn __generate_en_passant_move(
@@ -266,9 +267,9 @@ impl MoveGenerator {
         piece: &mut Piece,
         direction: i8,
         square: usize,
-        board: &Board
+        _board: &Board,
     ) -> bool {
-        if piece.can_en_passant == 0{
+        if piece.can_en_passant == 0 {
             return false;
         }
 
@@ -282,7 +283,7 @@ impl MoveGenerator {
             _ => {}
         }
         piece.can_en_passant = 0;
-        return true;
+        true
     }
 
     fn generate_king_move(
@@ -292,9 +293,9 @@ impl MoveGenerator {
         square: usize,
         board: &Board,
     ) {
-        for index in 0..8 {
+        for (index, item) in DIRECTION_OFFSET.iter().enumerate() {
             if self.precomputed[square][index] != 0 {
-                let end: usize = (square as i8 + DIRECTION_OFFSET[index]) as usize;
+                let end: usize = (square as i8 + item) as usize;
                 if !piece.is_ally(board.get_square(end)) {
                     moves.push(Move::new(square, end));
                 }
@@ -321,8 +322,8 @@ impl MoveGenerator {
                 _ => 0,
             };
             for index in 0..(self.precomputed[square][direction] - 1) {
-                let target: i8 = square as i8 + sign * (index as i8 + 1);
-                if board.get_square(target as usize) != None {
+                let target: i8 = square as i8 + sign * (index + 1);
+                if board.get_square(target as usize).is_some() {
                     can_castle = false;
                     break;
                 }

@@ -1,4 +1,4 @@
-use crate::common::CanvasDisplay;
+use crate::common::canvas_display;
 
 use super::board::Board;
 use super::piece::PColor;
@@ -33,21 +33,21 @@ pub struct Game<'a> {
 }
 
 impl Game<'_> {
-    pub fn new<'a>(renderer: &'a TextureCreator<WindowContext>) -> Game<'a> {
+    pub fn new(renderer: &TextureCreator<WindowContext>) -> Game<'_> {
         let mut board = Board::new(renderer);
         board.init();
-        let player = PColor::WHITE;
+        let player = PColor::White;
         let generator = MoveGenerator::new();
         let possible_moves = generator.generate_moves(&mut board, player);
 
         Game {
-            board: board,
+            board,
             current_player: player,
             piece_hold: None,
             x: 0,
             y: 0,
             last_move: None,
-            possible_moves: possible_moves,
+            possible_moves,
             move_generator: generator,
         }
     }
@@ -73,7 +73,7 @@ impl Game<'_> {
     }
 
     pub fn make_move(&mut self, x: i32, y: i32, width: u32, height: u32, sound: &Sound) {
-        if self.piece_hold == None {
+        if self.piece_hold.is_none() {
             return;
         }
         let i: usize = self.board.size * y as usize / height as usize;
@@ -92,21 +92,21 @@ impl Game<'_> {
         );
 
         match move_made {
-            MoveAction::MOVE => {
+            MoveAction::Move => {
                 sound.play("move");
             }
-            MoveAction::TAKE => {
+            MoveAction::Take => {
                 sound.play("take");
             }
-            MoveAction::CASTLE => {
+            MoveAction::Castle => {
                 sound.play("castle");
             }
-            MoveAction::INCORRECT => {
+            MoveAction::Incorrect => {
                 self.board.set(self.y, self.x, self.piece_hold);
                 self.reset_hold_piece_states();
             }
         }
-        if move_made != MoveAction::INCORRECT {
+        if move_made != MoveAction::Incorrect {
             self.update_after_move(start, end);
         }
     }
@@ -131,10 +131,10 @@ impl Game<'_> {
     // -------------------------------------------
 
     fn switch_player(&mut self) {
-        self.current_player = if self.current_player == PColor::WHITE {
-            PColor::BLACK
+        self.current_player = if self.current_player == PColor::White {
+            PColor::Black
         } else {
-            PColor::WHITE
+            PColor::White
         };
     }
 
@@ -160,8 +160,8 @@ impl Game<'_> {
                 );
 
                 match p.color {
-                    PColor::WHITE => {
-                        CanvasDisplay::canvas_copy(
+                    PColor::White => {
+                        canvas_display::canvas_copy(
                             canvas,
                             self.board
                                 .piece_textures
@@ -172,8 +172,8 @@ impl Game<'_> {
                             Some(rect),
                         );
                     }
-                    PColor::BLACK => {
-                        CanvasDisplay::canvas_copy(
+                    PColor::Black => {
+                        canvas_display::canvas_copy(
                             canvas,
                             self.board
                                 .piece_textures
@@ -197,7 +197,7 @@ impl Game<'_> {
                 let case_width: i32 = width / self.board.size as i32;
 
                 canvas.set_draw_color(Color::RGBA(0, 255, 0, 30));
-                CanvasDisplay::canvas_fill(
+                canvas_display::canvas_fill(
                     canvas,
                     Rect::new(
                         (m.start % self.board.size) as i32 * case_width,
@@ -207,7 +207,7 @@ impl Game<'_> {
                     ),
                 );
                 canvas.set_draw_color(Color::RGBA(255, 255, 0, 30));
-                CanvasDisplay::canvas_fill(
+                canvas_display::canvas_fill(
                     canvas,
                     Rect::new(
                         (m.end % self.board.size) as i32 * case_width,
@@ -221,7 +221,7 @@ impl Game<'_> {
     }
 
     fn draw_possible_moves(&self, canvas: &mut WindowCanvas, width: i32, height: i32) {
-        if self.piece_hold == None {
+        if self.piece_hold.is_none() {
             return;
         }
         let square: usize = self.y * self.board.size + self.x;
@@ -230,7 +230,7 @@ impl Game<'_> {
 
         canvas.set_draw_color(Color::RGBA(255, 0, 0, 200));
         for mv in &self.possible_moves[&square] {
-            CanvasDisplay::canvas_fill(
+            canvas_display::canvas_fill(
                 canvas,
                 Rect::new(
                     (mv.end % self.board.size) as i32 * case_width,
